@@ -32,3 +32,10 @@ export type Op = BaseOp
   & (DeterministicOp | NonDeterministicOp)
   & (SideEffectFreeOp | NonSideEffectFreeOp)
   & (SyncOp | NonSyncOp);
+
+export namespace Op {
+  export type ExtractResult<TOp extends BaseOp<any, any, any>> = TOp extends BaseOp<infer U, any, any> ? U : never;
+  export type ExtractContext<TOp extends BaseOp<any, any, any>> = TOp extends BaseOp<any, infer U, any> ? U : never;
+  export type ExtractArgs<TOp extends BaseOp<any, any, any>> = TOp extends BaseOp<any, any, infer U> ? U : never;
+}
+  
