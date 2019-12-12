@@ -1,6 +1,6 @@
 {
   "name": "op-rocks",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Composable operations library in TypeScript.",
   "main": "index.js",
   "types": "index.d.ts",
