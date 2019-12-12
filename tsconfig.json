@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "alwaysStrict": true,
+    "noImplicitAny": true,
+    "target": "ES2019",
+    "moduleResolution": "Node",
+    "module": "CommonJS",
+    "rootDir": "src/ts",
+    "outDir": "."
+  },
+  "files": [
+    "src/ts/index.ts"
+  ]
+}

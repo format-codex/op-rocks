@@ -1,3 +1,7 @@
+# Compiled
+*.d.ts
+*.js
+
 # Logs
 logs
 *.log
