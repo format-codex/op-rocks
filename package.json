@@ -23,6 +23,8 @@
   },
   "files": [
     "index.js",
-    "index.d.ts"
+    "index.d.ts",
+    "number-ops.js",
+    "number-ops.d.ts"
   ]
 }

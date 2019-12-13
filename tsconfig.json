@@ -10,6 +10,7 @@
     "outDir": "."
   },
   "files": [
-    "src/ts/index.ts"
+    "src/ts/index.ts",
+    "src/ts/number-ops.ts"
   ]
 }
