@@ -25,6 +25,8 @@
     "index.js",
     "index.d.ts",
     "number-ops.js",
-    "number-ops.d.ts"
+    "number-ops.d.ts",
+    "string-ops.js",
+    "string-ops.d.ts"
   ]
 }

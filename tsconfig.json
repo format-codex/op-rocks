@@ -11,6 +11,7 @@
   },
   "files": [
     "src/ts/index.ts",
-    "src/ts/number-ops.ts"
+    "src/ts/number-ops.ts",
+    "src/ts/string-ops.ts"
   ]
 }
