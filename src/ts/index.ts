@@ -138,3 +138,115 @@ BaseOp<TResult, TContext, []>
 {
   return new BoundOp(op, argOps) as any;
 }
+
+export class Get<TValue, THolder extends {readonly [P in TKey]: TValue}, TKey extends keyof TValue>
+implements NonDeterministicOp<TValue, object, [THolder, TKey]>,
+  NonSideEffectFreeOp<TValue, object, [THolder, TKey]>,
+  SyncOp<TValue, object, [THolder, TKey]> {
+
+  async perform(_: object, holder: THolder, key: TKey) { return holder[key]; }
+  performSync(_: object, holder: THolder, key: TKey) { return holder[key]; }
+  get isSync(): true { return true; }
+
+}
+
+export class Set<TValue, THolder extends {[P in TKey]: TValue}, TKey extends keyof TValue>
+implements NonDeterministicOp<TValue, object, [THolder, TKey, TValue]>,
+  NonSideEffectFreeOp<TValue, object, [THolder, TKey, TValue]>,
+  SyncOp<TValue, object, [THolder, TKey, TValue]> {
+
+  async perform(_: object, holder: THolder, key: TKey, value: TValue): Promise<TValue> {
+    (<any>holder)[key] = value;
+    return value;
+  }
+  performSync(_: object, holder: THolder, key: TKey, value: TValue): TValue {
+    (<any>holder)[key] = value;
+    return value;
+  }
+  get isSync(): true { return true; }
+
+}
+
+export class Mutate<TValue, THolder extends {[P in TKey]: TValue}, TKey extends keyof TValue>
+implements NonDeterministicOp<TValue, object, [THolder, TKey]>,
+  NonSideEffectFreeOp<TValue, object, [THolder, TKey]>,
+  SyncOp<TValue, object, [THolder, TKey]> {
+
+  constructor(readonly mutate: (val:TValue) => TValue) {
+  }
+
+  async perform(_: object, holder: THolder, key: TKey): Promise<TValue> {
+    const value = this.mutate(holder[key]);
+    (<any>holder)[key] = value;
+    return value;
+  }
+  performSync(_: object, holder: THolder, key: TKey): TValue {
+    const value = this.mutate(holder[key]);
+    (<any>holder)[key] = value;
+    return value;
+  }
+  get isSync(): true { return true; }
+
+}
+
+export class ContextGet<TValue, TContext extends {readonly [P in TKey]: TValue}, TKey extends keyof TValue>
+implements NonDeterministicOp<TValue, TContext, [TKey]>,
+  NonSideEffectFreeOp<TValue, TContext, [TKey]>,
+  SyncOp<TValue, TContext, [TKey]> {
+  
+  async perform(ctx: TContext, key: TKey): Promise<TValue> { return ctx[key]; }
+  performSync(ctx: TContext, key: TKey): TValue { return ctx[key]; }
+  get isSync(): true { return true; }
+
+}
+
+export class ContextSet<TValue, TContext extends {readonly [P in TKey]: TValue}, TKey extends keyof TValue>
+implements NonDeterministicOp<TValue, TContext, [TKey, TValue]>,
+  NonSideEffectFreeOp<TValue, TContext, [TKey, TValue]>,
+  SyncOp<TValue, TContext, [TKey, TValue]> {
+  
+  async perform(ctx: TContext, key: TKey, value: TValue): Promise<TValue> {
+    (<any>ctx)[key] = value;
+    return value;
+  }
+  performSync(ctx: TContext, key: TKey, value: TValue): TValue {
+    (<any>ctx)[key] = value;
+    return value;
+  }
+  get isSync(): true { return true; }
+
+}
+
+export class ContextMutate<TValue, TContext extends {readonly [P in TKey]: TValue}, TKey extends keyof TValue>
+implements NonDeterministicOp<TValue, TContext, [TKey]>,
+  NonSideEffectFreeOp<TValue, TContext, [TKey]>,
+  SyncOp<TValue, TContext, [TKey]> {
+  
+  constructor(readonly mutate: (val:TValue) => TValue) {
+  }
+
+  async perform(ctx: TContext, key: TKey): Promise<TValue> {
+    const value = this.mutate(ctx[key]);
+    (<any>ctx)[key] = value;
+    return value;
+  }
+  performSync(ctx: TContext, key: TKey): TValue {
+    const value = this.mutate(ctx[key]);
+    (<any>ctx)[key] = value;
+    return value;
+  }
+  get isSync(): true { return true; }
+
+}
+
+export class ContextGetSelf<TContext extends object>
+implements NonDeterministicOp<TContext, TContext, []>,
+  SideEffectFreeOp<TContext, TContext, []>,
+  SyncOp<TContext, TContext, []> {
+
+  async perform(ctx: TContext): Promise<TContext> { return ctx; }
+  performSync(ctx: TContext): TContext { return ctx; }
+  get isSync(): true { return true; }
+  get isSideEffectFree(): true { return true; }
+
+}
