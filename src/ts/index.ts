@@ -47,3 +47,94 @@ export class ConstOp<T> implements DeterministicOp<T>, SideEffectFreeOp<T>, Sync
   get isSideEffectFree(): true { return true; }
   get isSync(): true { return true; }
 }
+
+export class PureSyncOp<T, TArgs extends unknown[]>
+  implements DeterministicOp<T, object, TArgs>,
+    SideEffectFreeOp<T, object, TArgs>,
+    SyncOp<T, object, TArgs>
+{
+  constructor(readonly func: (...args: TArgs) => T) { }
+  async perform(_: object, ...args: TArgs): Promise<T> { return this.func(...args); }
+  performSync(_: object, ...args: TArgs): T { return this.func(...args); }
+  get isDeterministic(): true { return true; }
+  get isSideEffectFree(): true { return true; }
+  get isSync(): true { return true; }
+}
+
+class BoundOp<TResult, TContext extends object, TArgs extends unknown[]>
+implements BaseOp<TResult, TContext, []> {
+  
+  constructor(
+    readonly op: Op<TResult, TContext, TArgs>,
+    readonly argOps: { [P in keyof TArgs]: Op<TArgs[P], TContext, []> }
+  ) {
+  }
+
+  get isDeterministic(): boolean {
+    const value = !!this.op.isDeterministic && !this.argOps.some(op => !op.isDeterministic);
+    Object.defineProperty(this, 'isDeterministic', {value});
+    return value;
+  }
+
+  get isSideEffectFree(): boolean {
+    const value = !!this.op.isSideEffectFree && !this.argOps.some(op => !op.isSideEffectFree);
+    Object.defineProperty(this, 'isSideEffectFree', {value});
+    return value;
+  }
+
+  get isSync(): boolean {
+    const value = !!this.op.isSync && !this.argOps.some(op => !op.isSync);
+    Object.defineProperty(this, 'isSync', {value});
+    return value;
+  }
+
+  async perform(ctx: TContext): Promise<TResult> {
+    const args: TArgs = await Promise.all(this.argOps.map(op => op.perform(ctx))) as TArgs;
+    return await this.op.perform(ctx, ...args);
+  }
+
+  performSync(ctx: TContext): TResult {
+    const args: TArgs = this.argOps.map(op => (<any>op).performSync(ctx)) as TArgs;
+    return (<any>this.op).performSync(ctx, ...args);
+  }
+
+}
+
+type CalcDeterministic<TOp, TArgOps, TDet, TNon> = (
+  TOp extends DeterministicOp<any, any, any> ?
+  (TArgOps extends { [index: number]: DeterministicOp<any, any, any> } ? TDet : TNon|TDet)
+  : TNon|TDet
+);
+
+type CalcSideEffectFree<TOp, TArgOps, TDet, TNon> = (
+  TOp extends SideEffectFreeOp<any, any, any> ?
+  (TArgOps extends { [index: number]: SideEffectFreeOp<any, any, any> } ? TDet : TNon|TDet)
+  : TNon|TDet
+);
+
+type CalcSync<TOp, TArgOps, TDet, TNon> = (
+  TOp extends SyncOp<any, any, any> ?
+  (TArgOps extends { [index: number]: SyncOp<any, any, any> } ? TDet : TNon|TDet)
+  : TNon|TDet
+);
+
+export function bindOp
+<
+  TResult,
+  TContext extends object,
+  TArgs extends unknown[],
+  TOp extends Op<TResult, TContext, TArgs>,
+  TArgOps extends { [P in keyof TArgs]: Op<TArgs[P], TContext, []> }
+>
+(
+  op: TOp,
+  argOps: TArgOps
+)
+:
+BaseOp<TResult, TContext, []>
+  & CalcDeterministic<TOp, TArgOps, DeterministicOp<TResult, TContext, []>, NonDeterministicOp<TResult, TContext, []>>
+  & CalcSideEffectFree<TOp, TArgOps, SideEffectFreeOp<TResult, TContext, []>, NonSideEffectFreeOp<TResult, TContext, []>>
+  & CalcSync<TOp, TArgOps, SyncOp<TResult, TContext, []>, NonSyncOp<TResult, TContext, []>>
+{
+  return new BoundOp(op, argOps) as any;
+}
