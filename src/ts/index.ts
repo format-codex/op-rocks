@@ -247,3 +247,11 @@ implements NonDeterministicOp<TContext, TContext, []>,
   get isSideEffectFree(): true { return true; }
 
 }
+
+export const NO_OP: Op<void, object, [], {isSync:true, isDeterministic:true, isSideEffectFree:true}> = {
+  async perform(): Promise<void> { },
+  performSync(): void { },
+  get isSync(): true { return true; },
+  get isDeterministic(): true { return true; },
+  get isSideEffectFree(): true { return true; },
+};
