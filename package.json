@@ -28,5 +28,8 @@
     "number-ops.d.ts",
     "string-ops.js",
     "string-ops.d.ts"
-  ]
+  ],
+  "dependencies": {
+    "@types/node": "^12.12.17"
+  }
 }
