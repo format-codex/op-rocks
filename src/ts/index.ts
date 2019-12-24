@@ -26,6 +26,7 @@ interface SyncOp<TResult=void, TContext extends object=object, TArgs extends unk
 
 interface NonSyncOp<TResult=void, TContext extends object=object, TArgs extends unknown[] = []> extends BaseOp<TResult, TContext, TArgs> {
   isSync?: false;
+  performSync?: null;
 }
 
 export type Op<TResult=void, TContext extends object=object, TArgs extends unknown[] = [], TSettings extends {} = {}>
@@ -255,3 +256,49 @@ export const NO_OP: Op<void, object, [], {isSync:true, isDeterministic:true, isS
   get isDeterministic(): true { return true; },
   get isSideEffectFree(): true { return true; },
 };
+
+class Block<TResult=void, TContext extends object=object> implements BaseOp<TResult, TContext> {
+  constructor(
+    readonly voidOps: Op<unknown, TContext, []>[],
+    readonly finalOp: Op<TResult, TContext, []>) {
+  }
+  async perform(ctx: TContext): Promise<TResult> {
+    for (const op of this.voidOps) await op.perform(ctx);
+    return await this.finalOp.perform(ctx);
+  }
+  performSync(ctx: TContext): TResult {
+    for (const op of this.voidOps) (<SyncOp<unknown, TContext, []>>op).performSync(ctx);
+    return (<SyncOp<TResult, TContext, []>>this.finalOp).performSync(ctx);
+  }
+  get isSync(): boolean {
+    for (const op of this.voidOps) {
+      if (!op.isSync) return false;
+    }
+    return !!this.finalOp.isSync;
+  }
+  get isDeterministic(): boolean {
+    for (const op of this.voidOps) {
+      if (!op.isDeterministic) return false;
+    }
+    return !!this.finalOp.isDeterministic;
+  }
+  get isSideEffectFree(): boolean {
+    for (const op of this.voidOps) {
+      if (!op.isSideEffectFree) return false;
+    }
+    return !!this.finalOp.isSideEffectFree;
+  }
+}
+
+export function makeBlock<
+    TVoidOps extends Op<unknown, Op.ExtractContext<TFinalOp>, []>[],
+    TFinalOp extends Op<unknown, object, []>>(
+  voidOps: TVoidOps,
+  finalOp: TFinalOp) : Op<Op.ExtractResult<TFinalOp>, Op.ExtractContext<TFinalOp>, [],
+    (TVoidOps extends {isDeterministic:true}[] ? TFinalOp extends {isDeterministic:true} ? {isDeterministic:true} : {} : {})
+    & (TVoidOps extends {isSync:true}[] ? TFinalOp extends {isSync:true} ? {isSync:true} : {} : {})
+    & (TVoidOps extends {isSideEffectFree:true}[] ? TFinalOp extends {isSideEffectFree:true} ? {isSideEffectFree:true} : {} : {})>
+{
+  if (voidOps.length === 0) return finalOp as any;
+  return new Block(voidOps, finalOp) as any;
+}
