@@ -1,5 +1,5 @@
 
-import { ConstOp, PureSyncOp, BaseOp, NonDeterministicOp, SyncOp, NonSideEffectFreeOp } from '.'
+import { ConstOp, PureSyncOp, Op } from '.'
 
 export const EPSILON = new ConstOp(Number.EPSILON);
 export const MAX_SAFE_INTEGER = new ConstOp(Number.MAX_SAFE_INTEGER);
@@ -67,10 +67,7 @@ export const tan = new PureSyncOp(Math.tan);
 export const tanh = new PureSyncOp(Math.tanh);
 export const trunc = new PureSyncOp(Math.trunc);
 
-export const random:
-NonDeterministicOp<number, object, []>
-& SyncOp<number, object, []>
-& NonSideEffectFreeOp<number, object, []> = {
+export const random: Op<number, object, [], {isSync:true}> = {
   async perform(_: object): Promise<number> { return Math.random(); },
   performSync(_: object): number { return Math.random(); },
   isSync: true,

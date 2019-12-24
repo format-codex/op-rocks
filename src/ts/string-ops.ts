@@ -1,5 +1,5 @@
 
-import { PureSyncOp, NonDeterministicOp, NonSideEffectFreeOp, SyncOp } from '.'
+import { PureSyncOp, Op } from '.'
 
 export const getStringLength = new PureSyncOp((v: string) => v.length);
 export const fromCharCode = new PureSyncOp(String.fromCharCode);
@@ -55,10 +55,7 @@ export const trim = new PureSyncOp(bindMethod('', 'trim'));
 interface Matcher {
   [Symbol.match](s: string): RegExpMatchArray;
 }
-export const match:
-  NonDeterministicOp<RegExpMatchArray, object, [string, Matcher]>
-  & NonSideEffectFreeOp<RegExpMatchArray, object, [string, Matcher]>
-  & SyncOp<RegExpMatchArray, object, [string, Matcher]> = {
+export const match: Op<RegExpMatchArray, object, [string, Matcher], {isSync: true}> = {
 
   async perform(_:object, s:string, m:Matcher): Promise<RegExpMatchArray> {
     return s.match(m);
@@ -80,9 +77,7 @@ interface FunctionReplace {
 type ReplaceArgs = [string, StringReplace, string]
   | [string, FunctionReplace, ReplaceFunc]
   | [string, string | RegExp, string];
-export const replace: NonDeterministicOp<string, object, ReplaceArgs>
-  & NonSideEffectFreeOp<string, object, ReplaceArgs>
-  & SyncOp<string, object, ReplaceArgs> = {
+export const replace: Op<string, object, ReplaceArgs, {isSync: true}> = {
 
   async perform(_: object, a:string, b, c): Promise<string> { return (<any>a).replace(b, c); },
   performSync(_: object, a:string, b, c): string { return (<any>a).replace(b, c); },
@@ -94,9 +89,7 @@ interface Splitter {
   [Symbol.split](s: string, limit?: number): string[];
 }
 
-export const split: NonDeterministicOp<string[], object, [string, Splitter, number?]>
-  & NonSideEffectFreeOp<string[], object, [string, Splitter, number?]>
-  & SyncOp<string[], object, [string, Splitter, number?]> = {
+export const split: Op<string[], object, [string, Splitter, number?], {isSync:true}> = {
   
   async perform(_: object, s: string, x: Splitter, limit?: number): Promise<string[]> { return s.split(x, limit); },
   performSync(_: object, s: string, x: Splitter, limit?: number): string[] { return s.split(x, limit); },
