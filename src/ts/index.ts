@@ -428,3 +428,5 @@ export function makeOrOp<
 > {
   return new LogicalOrOp(op1, op2);
 }
+
+export const TYPEOF = new PureSyncOp(v => typeof v);
