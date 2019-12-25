@@ -344,11 +344,87 @@ export function makeConditionalOp<
   elseOp: TElseOp
 ): Op<
   Op.ExtractResult<TThenOp> | Op.ExtractResult<TElseOp>,
-  Op.ExtractContext<TConditionOp> | Op.ExtractContext<TThenOp> | Op.ExtractContext<TElseOp>,
+  Op.ExtractContext<TConditionOp> & Op.ExtractContext<TThenOp> & Op.ExtractContext<TElseOp>,
   [],
   Extends3<TConditionOp,TThenOp,TElseOp, {isSync:true}, {isSync:true}, {}>
   & Extends3<TConditionOp,TThenOp,TElseOp, {isDeterministic:true}, {isDeterministic:true}, {}>
   & Extends3<TConditionOp,TThenOp,TElseOp, {isSideEffectFree:true}, {isSideEffectFree:true}, {}>
 > {
   return new ConditionalOp(conditionOp, thenOp, elseOp);
+}
+
+class LogicalAndOp {
+  constructor(readonly op1: any, readonly op2: any) {
+  }
+  get isSync() {
+    return this.op1.isSync && this.op2.isSync;
+  }
+  get isDeterministic() {
+    return this.op1.isDeterministic && this.op2.isDeterministic;
+  }
+  get isSideEffectFree() {
+    return this.op1.isSideEffectFree && this.op2.isSideEffectFree;
+  }
+  async perform(ctx: any) {
+    return (await this.op1.perform(ctx)) && (await this.op2.perform(ctx));
+  }
+  performSync(ctx: any) {
+    return this.op1.performSync(ctx) && this.op2.performSync(ctx);
+  }
+}
+
+class LogicalOrOp {
+  constructor(readonly op1: any, readonly op2: any) {
+  }
+  get isSync() {
+    return this.op1.isSync && this.op2.isSync;
+  }
+  get isDeterministic() {
+    return this.op1.isDeterministic && this.op2.isDeterministic;
+  }
+  get isSideEffectFree() {
+    return this.op1.isSideEffectFree && this.op2.isSideEffectFree;
+  }
+  async perform(ctx: any) {
+    return (await this.op1.perform(ctx)) || (await this.op2.perform(ctx));
+  }
+  performSync(ctx: any) {
+    return this.op1.performSync(ctx) || this.op2.performSync(ctx);
+  }
+}
+
+type Extends2<A,B, E, X,Y> = A extends E ? B extends E ? X : Y : Y;
+
+export function makeAndOp<
+  TOp1 extends BaseOp<unknown>,
+  TOp2 extends BaseOp<unknown>,
+>(
+  op1: TOp1,
+  op2: TOp2,
+): Op<
+  Op.ExtractResult<TOp1> | Op.ExtractResult<TOp2>,
+  Op.ExtractContext<TOp1> & Op.ExtractContext<TOp2>,
+  [],
+  Extends2<TOp1,TOp2, {isSync:true}, {isSync:true}, {}>
+  & Extends2<TOp1,TOp2, {isDeterministic:true}, {isDeterministic:true}, {}>
+  & Extends2<TOp1,TOp2, {isSideEffectFree:true}, {isSideEffectFree:true}, {}>
+> {
+  return new LogicalAndOp(op1, op2);
+}
+
+export function makeOrOp<
+  TOp1 extends BaseOp<unknown>,
+  TOp2 extends BaseOp<unknown>,
+>(
+  op1: TOp1,
+  op2: TOp2,
+): Op<
+  Op.ExtractResult<TOp1> | Op.ExtractResult<TOp2>,
+  Op.ExtractContext<TOp1> & Op.ExtractContext<TOp2>,
+  [],
+  Extends2<TOp1,TOp2, {isSync:true}, {isSync:true}, {}>
+  & Extends2<TOp1,TOp2, {isDeterministic:true}, {isDeterministic:true}, {}>
+  & Extends2<TOp1,TOp2, {isSideEffectFree:true}, {isSideEffectFree:true}, {}>
+> {
+  return new LogicalOrOp(op1, op2);
 }
