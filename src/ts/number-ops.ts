@@ -21,7 +21,16 @@ export const add = new PureSyncOp((a: number, b: number) => a + b);
 export const multiply = new PureSyncOp((a: number, b: number) => a * b);
 export const subtract = new PureSyncOp((a: number, b: number) => a - b);
 export const divide = new PureSyncOp((a: number, b: number) => a / b);
+export const modulo = new PureSyncOp((a: number, b: number) => a % b);
 export const negate = new PureSyncOp((a: number) => -a);
+
+export const bitAnd = new PureSyncOp((a: number, b: number) => a & b);
+export const bitOr = new PureSyncOp((a: number, b: number) => a | b);
+export const bitXor = new PureSyncOp((a: number, b: number) => a ^ b);
+export const bitNot = new PureSyncOp((a: number) => ~a);
+export const lshift = new PureSyncOp((a: number, b: number) => a << b);
+export const rshiftSigned = new PureSyncOp((a: number, b: number) => a >> b);
+export const rshiftUnsigned = new PureSyncOp((a: number, b: number) => a >> b);
 
 export const E = new ConstOp(Math.E);
 export const LN10 = new ConstOp(Math.LN10);
