@@ -302,3 +302,53 @@ export function makeBlock<
   if (voidOps.length === 0) return finalOp as any;
   return new Block(voidOps, finalOp) as any;
 }
+
+export const EQ = new PureSyncOp((a: any, b: any) => a === b);
+export const NEQ = new PureSyncOp((a: any, b: any) => a !== b);
+export const GT = new PureSyncOp((a, b) => a > b);
+export const GTE = new PureSyncOp((a, b) => a >= b);
+export const LT = new PureSyncOp((a, b) => a < b);
+export const LTE = new PureSyncOp((a, b) => a <= b);
+
+export const NOT = new PureSyncOp((a: any) => !a);
+
+class ConditionalOp {
+  constructor(readonly conditionOp: any, readonly thenOp: any, readonly elseOp: any = NO_OP) {
+  }
+  get isSync() {
+    return this.conditionOp.isSync && this.thenOp.isSync && this.elseOp.isSync;
+  }
+  get isDeterministic() {
+    return this.conditionOp.isDeterministic && this.thenOp.isDeterministic && this.elseOp.isDeterministic;
+  }
+  get isSideEffectFree() {
+    return this.conditionOp.isSideEffectFree && this.thenOp.isSideEffectFree && this.elseOp.isSideEffectFree;
+  }
+  async perform(ctx: any) {
+    return await this.conditionOp.perform(ctx) ? await this.thenOp.perform(ctx) : await this.elseOp.perform(ctx);
+  }
+  performSync(ctx: any) {
+    return this.conditionOp.performSync(ctx) ? this.thenOp.performSync(ctx) : this.elseOp.performSync(ctx);
+  }
+}
+
+type Extends3<A,B,C, E, X,Y> = A extends E ? B extends E ? C extends E ? X : Y : Y : Y;
+
+export function makeConditionalOp<
+  TConditionOp extends BaseOp<boolean>,
+  TThenOp extends BaseOp<unknown>,
+  TElseOp extends BaseOp<unknown>,
+>(
+  conditionOp: TConditionOp,
+  thenOp: TThenOp,
+  elseOp: TElseOp
+): Op<
+  Op.ExtractResult<TThenOp> | Op.ExtractResult<TElseOp>,
+  Op.ExtractContext<TConditionOp> | Op.ExtractContext<TThenOp> | Op.ExtractContext<TElseOp>,
+  [],
+  Extends3<TConditionOp,TThenOp,TElseOp, {isSync:true}, {isSync:true}, {}>
+  & Extends3<TConditionOp,TThenOp,TElseOp, {isDeterministic:true}, {isDeterministic:true}, {}>
+  & Extends3<TConditionOp,TThenOp,TElseOp, {isSideEffectFree:true}, {isSideEffectFree:true}, {}>
+> {
+  return new ConditionalOp(conditionOp, thenOp, elseOp);
+}
