@@ -47,3 +47,28 @@ export const setFloat64BE = new BufferOp((buf: Buffer, offset: number, value: nu
 export const swap16 = new BufferOp((buffer: Buffer) => { buffer.swap16(); });
 export const swap32 = new BufferOp((buffer: Buffer) => { buffer.swap32(); });
 export const swap64 = new BufferOp((buffer: Buffer) => { buffer.swap64(); });
+
+export const compare = new BufferOp((b1: Buffer, b2: Uint8Array, targetStart?: number, targetEnd?: number, sourceStart?: number, sourceEnd?: number) => b1.compare(b2, targetStart, targetEnd, sourceStart, sourceEnd));
+export const copy = new BufferOp((b1: Buffer, b2: Uint8Array, targetStart?: number, sourceStart?: number, sourceEnd?: number) => b1.copy(b2, targetStart, sourceStart, sourceEnd));
+export const equals = new BufferOp((b1: Buffer, b2: Uint8Array) => b1.equals(b2));
+
+export const fillBuffer = new BufferOp((b1: Buffer, b2: Uint8Array, offset?: number, end?: number) => { b1.fill(b2, offset, end) });
+export const fillString = new BufferOp((b1: Buffer, b2: string, offset?: number, end?: number, encoding?: BufferEncoding) => { b1.fill(b2, offset, end, encoding) });
+export const fillByte = new BufferOp((b1: Buffer, b2: number, offset?: number, end?: number) => { b1.fill(b2, offset, end) });
+
+export const includesBuffer = new BufferOp((b1: Buffer, b2: Buffer, offset?: number) => b1.includes(b2, offset));
+export const includesString = new BufferOp((b1: Buffer, b2: string, offset?: number, encoding?: BufferEncoding) => b1.includes(b2, offset, encoding));
+export const includesByte = new BufferOp((b1: Buffer, b2: number, offset?: number) => b1.includes(b2, offset));
+
+export const indexOfBuffer = new BufferOp((b1: Buffer, b2: Buffer, offset?: number) => b1.indexOf(b2, offset));
+export const indexOfString = new BufferOp((b1: Buffer, b2: string, offset?: number, encoding?: BufferEncoding) => b1.indexOf(b2, offset, encoding));
+export const indexOfByte = new BufferOp((b1: Buffer, b2: number, offset?: number) => b1.indexOf(b2, offset));
+
+export const lastIndexOfBuffer = new BufferOp((b1: Buffer, b2: Buffer, offset?: number) => b1.lastIndexOf(b2, offset));
+export const lastIndexOfString = new BufferOp((b1: Buffer, b2: string, offset?: number, encoding?: BufferEncoding) => b1.lastIndexOf(b2, offset, encoding));
+export const lastIndexOfByte = new BufferOp((b1: Buffer, b2: number, offset?: number) => b1.lastIndexOf(b2, offset));
+
+export const subarray = new BufferOp((b1: Buffer, startOffset?: number, endOffset?: number) => b1.subarray(startOffset, endOffset));
+export const write = new BufferOp((b1: Buffer, s: string, offset: number, encoding?: BufferEncoding) => b1.write(s, offset, encoding));
+
+export const reverse = new BufferOp((b1: Buffer) => { b1.reverse(); });
